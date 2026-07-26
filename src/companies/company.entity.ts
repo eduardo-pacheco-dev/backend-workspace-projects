@@ -5,25 +5,25 @@ import { ApiProperty } from '@nestjs/swagger';
 export class Company {
   @ApiProperty()
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @ApiProperty()
   @Column()
-  name: string;
+  name!: string;
 
   @ApiProperty()
   @Column({ unique: true })
-  cnpj: string;
+  cnpj!: string;
 
   @ApiProperty({ required: false })
   @Column({ nullable: true })
-  address: string;
+  address!: string;
 
   @ApiProperty({ required: false })
   @Column({ nullable: true })
-  phone: string;
+  phone!: string;
 
   @ApiProperty({ required: false })
   @Column({ nullable: true })
-  email: string;
+  email!: string;
 }
