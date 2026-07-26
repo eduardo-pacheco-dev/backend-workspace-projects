@@ -8,7 +8,6 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { randomBytes } from 'crypto';
 import { User } from '../users/user.entity';
 import { RegisterDto } from './dto/register.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
@@ -92,45 +91,43 @@ export class AuthService {
     return user;
   }
 
-  async forgotPassword(email: string): Promise<{ message: string; token?: string }> {
+  async forgotPassword(email: string): Promise<{ message: string }> {
     const user = await this.usersRepository.findOne({
       where: { email },
     });
 
     if (!user) {
-      return { message: 'If the email exists, a reset link has been sent' };
+      return { message: 'If the email exists, a verification code has been sent' };
     }
 
-    const resetToken = randomBytes(32).toString('hex');
-    const resetTokenExpires = new Date(Date.now() + 3600000); // 1 hour
+    const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const resetCodeExpires = new Date(Date.now() + 3600000); // 1 hour
 
     await this.usersRepository.update(user.id, {
-      resetToken,
-      resetTokenExpires,
+      resetCode,
+      resetCodeExpires,
     });
 
-    // In production, send email here with the resetToken
-    // For development, return the token for testing
-    return {
-      message: 'If the email exists, a reset link has been sent',
-      token: resetToken,
-    };
+    // TODO: In production, send email here with the resetCode
+    console.log(`Password reset code for ${email}: ${resetCode}`);
+
+    return { message: 'If the email exists, a verification code has been sent' };
   }
 
   async resetPassword(dto: ResetPasswordDto): Promise<{ message: string }> {
     const user = await this.usersRepository
       .createQueryBuilder('user')
-      .addSelect('user.resetToken')
-      .addSelect('user.resetTokenExpires')
-      .where('user.resetToken = :token', { token: dto.token })
+      .addSelect('user.resetCode')
+      .addSelect('user.resetCodeExpires')
+      .where('user.resetCode = :code', { code: dto.code })
       .getOne();
 
     if (!user) {
-      throw new BadRequestException('Invalid or expired reset token');
+      throw new BadRequestException('Invalid verification code');
     }
 
-    if (user.resetTokenExpires && user.resetTokenExpires < new Date()) {
-      throw new BadRequestException('Reset token has expired');
+    if (user.resetCodeExpires && user.resetCodeExpires < new Date()) {
+      throw new BadRequestException('Verification code has expired');
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -141,8 +138,8 @@ export class AuthService {
       .update(User)
       .set({
         password: hashedPassword,
-        resetToken: undefined,
-        resetTokenExpires: undefined,
+        resetCode: undefined,
+        resetCodeExpires: undefined,
       })
       .where('id = :id', { id: user.id })
       .execute();

@@ -28,8 +28,8 @@ export class User {
   companyId?: number;
 
   @Column({ nullable: true, select: false })
-  resetToken?: string;
+  resetCode?: string;
 
   @Column({ type: 'timestamp', nullable: true, select: false })
-  resetTokenExpires?: Date;
+  resetCodeExpires?: Date;
 }

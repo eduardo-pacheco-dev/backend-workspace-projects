@@ -103,14 +103,14 @@ export class AuthController {
   @Public()
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Request password reset' })
+  @ApiOperation({ summary: 'Request password reset code' })
   @ApiResponse({
     status: 200,
-    description: 'If the email exists, a reset link has been sent',
+    description: 'If the email exists, a verification code has been sent',
     schema: {
       type: 'object',
       properties: {
-        message: { type: 'string', example: 'If the email exists, a reset link has been sent' },
+        message: { type: 'string', example: 'If the email exists, a verification code has been sent' },
       },
     },
   })
@@ -121,7 +121,7 @@ export class AuthController {
   @Public()
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Reset password with token' })
+  @ApiOperation({ summary: 'Reset password with verification code' })
   @ApiResponse({
     status: 200,
     description: 'Password has been reset successfully',
@@ -132,7 +132,7 @@ export class AuthController {
       },
     },
   })
-  @ApiResponse({ status: 400, description: 'Invalid or expired token' })
+  @ApiResponse({ status: 400, description: 'Invalid or expired code' })
   async resetPassword(@Body() dto: ResetPasswordDto) {
     return this.authService.resetPassword(dto);
   }
