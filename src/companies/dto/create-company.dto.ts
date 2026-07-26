@@ -5,7 +5,7 @@ import { IsCnpj } from '../../common/validators/cnpj.constraint';
 import { CompanySize } from '../company.entity';
 
 export class CreateCompanyDto {
-  @ApiProperty({ description: 'Company legal name' })
+  @ApiProperty({ description: 'Company legal name', example: 'Acme Technology Ltda' })
   @IsString()
   name!: string;
 
@@ -18,37 +18,37 @@ export class CreateCompanyDto {
   @IsCnpj({ message: 'Invalid CNPJ' })
   cnpj!: string;
 
-  @ApiPropertyOptional({ description: 'Trade name' })
+  @ApiPropertyOptional({ description: 'Trade name', example: 'Acme Tech' })
   @IsOptional()
   @IsString()
   nomeFantasia?: string;
 
-  @ApiPropertyOptional({ description: 'Opening date' })
+  @ApiPropertyOptional({ description: 'Opening date', example: '2020-01-15' })
   @IsOptional()
   @IsDateString()
   dataAbertura?: string;
 
-  @ApiPropertyOptional({ description: 'Company size', enum: CompanySize })
+  @ApiPropertyOptional({ description: 'Company size', enum: CompanySize, example: CompanySize.LTDA })
   @IsOptional()
   @IsEnum(CompanySize)
   porte?: CompanySize;
 
-  @ApiPropertyOptional({ description: 'Registration status' })
+  @ApiPropertyOptional({ description: 'Registration status', example: 'Active' })
   @IsOptional()
   @IsString()
   situacaoCadastral?: string;
 
-  @ApiPropertyOptional({ description: 'Full address' })
+  @ApiPropertyOptional({ description: 'Full address', example: '123 Main Street, Suite 100, São Paulo, SP' })
   @IsOptional()
   @IsString()
   address?: string;
 
-  @ApiPropertyOptional({ description: 'Phone number' })
+  @ApiPropertyOptional({ description: 'Phone number', example: '+55 11 99999-1234' })
   @IsOptional()
   @IsString()
   phone?: string;
 
-  @ApiPropertyOptional({ description: 'Email address' })
+  @ApiPropertyOptional({ description: 'Email address', example: 'contact@acmetech.com.br' })
   @IsOptional()
   @IsEmail()
   email?: string;
