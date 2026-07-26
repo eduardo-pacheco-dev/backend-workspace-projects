@@ -1,14 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { NotFoundException } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { ObjectLiteral, Repository } from 'typeorm';
 import { ProjectsService } from './projects.service';
 import { Project } from './project.entity';
 import { Company } from '../companies/company.entity';
 
-type MockRepository<T = any> = Partial<Record<keyof Repository<T>, jest.Mock>>;
+type MockRepository<T extends ObjectLiteral = any> = Partial<Record<keyof Repository<T>, jest.Mock>>;
 
-const createMockRepository = <T = any>(): MockRepository<T> => ({
+const createMockRepository = <T extends ObjectLiteral = any>(): MockRepository<T> => ({
   find: jest.fn(),
   findOne: jest.fn(),
   findOneBy: jest.fn(),
@@ -222,7 +222,7 @@ describe('ProjectsService', () => {
         companies: [],
       };
 
-      projectsRepository.findOne
+      projectsRepository.findOne!
         .mockReturnValueOnce(project)
         .mockReturnValueOnce(updatedProject);
       projectsRepository.save!.mockReturnValue(updatedProject);
