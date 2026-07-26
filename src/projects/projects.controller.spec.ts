@@ -12,8 +12,6 @@ describe('ProjectsController', () => {
     findOne: jest.fn(),
     update: jest.fn(),
     remove: jest.fn(),
-    addCompany: jest.fn(),
-    removeCompany: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -31,16 +29,20 @@ describe('ProjectsController', () => {
     service = module.get<ProjectsService>(ProjectsService);
   });
 
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
   it('should be defined', () => {
     expect(controller).toBeDefined();
   });
 
   describe('create', () => {
     it('should call service.create with dto', async () => {
-      const dto = { name: 'Test Project', description: 'A test project' };
-      const project = { id: 1, ...dto, companies: [] };
+      const dto = { name: 'Test Project', companyId: 1 };
+      const project = { id: 1, ...dto, company: { id: 1 } };
 
-      mockProjectsService.create.mockReturnValue(project);
+      mockProjectsService.create.mockResolvedValue(project);
 
       const result = await controller.create(dto);
 
@@ -52,11 +54,10 @@ describe('ProjectsController', () => {
   describe('findAll', () => {
     it('should call service.findAll', async () => {
       const projects = [
-        { id: 1, name: 'Project 1', companies: [] },
-        { id: 2, name: 'Project 2', companies: [] },
+        { id: 1, name: 'Project 1', companyId: 1, company: { id: 1 } },
       ];
 
-      mockProjectsService.findAll.mockReturnValue(projects);
+      mockProjectsService.findAll.mockResolvedValue(projects);
 
       const result = await controller.findAll();
 
@@ -67,9 +68,9 @@ describe('ProjectsController', () => {
 
   describe('findOne', () => {
     it('should call service.findOne with id', async () => {
-      const project = { id: 1, name: 'Project 1', companies: [] };
+      const project = { id: 1, name: 'Project 1', companyId: 1, company: { id: 1 } };
 
-      mockProjectsService.findOne.mockReturnValue(project);
+      mockProjectsService.findOne.mockResolvedValue(project);
 
       const result = await controller.findOne(1);
 
@@ -80,10 +81,10 @@ describe('ProjectsController', () => {
 
   describe('update', () => {
     it('should call service.update with id and dto', async () => {
-      const dto = { name: 'Updated Project' };
-      const project = { id: 1, ...dto, companies: [] };
+      const dto = { name: 'Updated Project', companyId: 1 };
+      const project = { id: 1, ...dto, company: { id: 1 } };
 
-      mockProjectsService.update.mockReturnValue(project);
+      mockProjectsService.update.mockResolvedValue(project);
 
       const result = await controller.update(1, dto);
 
@@ -94,46 +95,11 @@ describe('ProjectsController', () => {
 
   describe('remove', () => {
     it('should call service.remove with id', async () => {
-      mockProjectsService.remove.mockReturnValue(undefined);
+      mockProjectsService.remove.mockResolvedValue(undefined);
 
       await controller.remove(1);
 
       expect(service.remove).toHaveBeenCalledWith(1);
-    });
-  });
-
-  describe('addCompany', () => {
-    it('should call service.addCompany with projectId and companyId', async () => {
-      const dto = { companyId: 1 };
-      const project = {
-        id: 1,
-        name: 'Project 1',
-        companies: [{ id: 1, name: 'Company 1' }],
-      };
-
-      mockProjectsService.addCompany.mockReturnValue(project);
-
-      const result = await controller.addCompany(1, dto);
-
-      expect(service.addCompany).toHaveBeenCalledWith(1, 1);
-      expect(result).toEqual(project);
-    });
-  });
-
-  describe('removeCompany', () => {
-    it('should call service.removeCompany with projectId and companyId', async () => {
-      const project = {
-        id: 1,
-        name: 'Project 1',
-        companies: [],
-      };
-
-      mockProjectsService.removeCompany.mockReturnValue(project);
-
-      const result = await controller.removeCompany(1, 1);
-
-      expect(service.removeCompany).toHaveBeenCalledWith(1, 1);
-      expect(result).toEqual(project);
     });
   });
 });

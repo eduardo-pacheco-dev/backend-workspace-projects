@@ -1,8 +1,6 @@
 node_modules
 dist
 .env
-.agents
-.claude
 skills-lock.json
 logs
 coverage

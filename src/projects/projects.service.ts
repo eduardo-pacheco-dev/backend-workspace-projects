@@ -14,19 +14,24 @@ export class ProjectsService {
     private readonly companiesRepository: Repository<Company>,
   ) {}
 
-  create(dto: CreateProjectDto): Promise<Project> {
+  async create(dto: CreateProjectDto): Promise<Project> {
+    const company = await this.companiesRepository.findOneBy({ id: dto.companyId });
+    if (!company) {
+      throw new NotFoundException(`Company #${dto.companyId} not found`);
+    }
+
     const project = this.projectsRepository.create(dto);
     return this.projectsRepository.save(project);
   }
 
-  findAll(): Promise<Project[]> {
-    return this.projectsRepository.find({ relations: { companies: true } });
+  async findAll(): Promise<Project[]> {
+    return this.projectsRepository.find({ relations: { company: true } });
   }
 
   async findOne(id: number): Promise<Project> {
     const project = await this.projectsRepository.findOne({
       where: { id },
-      relations: { companies: true },
+      relations: { company: true },
     });
     if (!project) {
       throw new NotFoundException(`Project #${id} not found`);
@@ -35,33 +40,13 @@ export class ProjectsService {
   }
 
   async update(id: number, dto: CreateProjectDto): Promise<Project> {
+    await this.findOne(id);
     await this.projectsRepository.update(id, dto);
     return this.findOne(id);
   }
 
   async remove(id: number): Promise<void> {
-    await this.projectsRepository.delete(id);
-  }
-
-  async addCompany(projectId: number, companyId: number): Promise<Project> {
-    const project = await this.findOne(companyId ? projectId : projectId);
-    const company = await this.companiesRepository.findOneBy({
-      id: companyId,
-    });
-    if (!company) {
-      throw new NotFoundException(`Company #${companyId} not found`);
-    }
-    if (!project.companies.some((c) => c.id === companyId)) {
-      project.companies.push(company);
-      await this.projectsRepository.save(project);
-    }
-    return this.findOne(projectId);
-  }
-
-  async removeCompany(projectId: number, companyId: number): Promise<Project> {
-    const project = await this.findOne(projectId);
-    project.companies = project.companies.filter((c) => c.id !== companyId);
-    await this.projectsRepository.save(project);
-    return this.findOne(projectId);
+    const project = await this.findOne(id);
+    await this.projectsRepository.remove(project);
   }
 }
