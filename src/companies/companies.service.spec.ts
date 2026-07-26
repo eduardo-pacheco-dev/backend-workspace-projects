@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CompaniesService } from '../src/companies/companies.service';
-import { Company } from '../src/companies/company.entity';
+import { CompaniesService } from './companies.service';
+import { Company } from './company.entity';
 
 type MockRepository<T = any> = Partial<Record<keyof Repository<T>, jest.Mock>>;
 
