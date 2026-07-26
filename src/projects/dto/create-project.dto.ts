@@ -10,4 +10,8 @@ export class CreateProjectDto {
   @IsOptional()
   @IsString()
   description?: string;
+
+  @ApiProperty({ description: 'Company ID', example: 1 })
+  @IsNumber()
+  companyId!: number;
 }

@@ -38,68 +38,68 @@ describe('ProjectsController', () => {
   });
 
   describe('create', () => {
-    it('should call service.create with companyId and dto', async () => {
-      const dto = { name: 'Test Project', description: 'A test project' };
-      const project = { id: 1, ...dto, companyId: 1, company: { id: 1 } };
+    it('should call service.create with dto', async () => {
+      const dto = { name: 'Test Project', companyId: 1 };
+      const project = { id: 1, ...dto, company: { id: 1 } };
 
       mockProjectsService.create.mockResolvedValue(project);
 
-      const result = await controller.create(1, dto);
+      const result = await controller.create(dto);
 
-      expect(service.create).toHaveBeenCalledWith(1, dto);
+      expect(service.create).toHaveBeenCalledWith(dto);
       expect(result).toEqual(project);
     });
   });
 
   describe('findAll', () => {
-    it('should call service.findAll with companyId', async () => {
+    it('should call service.findAll', async () => {
       const projects = [
         { id: 1, name: 'Project 1', companyId: 1, company: { id: 1 } },
       ];
 
       mockProjectsService.findAll.mockResolvedValue(projects);
 
-      const result = await controller.findAll(1);
+      const result = await controller.findAll();
 
-      expect(service.findAll).toHaveBeenCalledWith(1);
+      expect(service.findAll).toHaveBeenCalled();
       expect(result).toEqual(projects);
     });
   });
 
   describe('findOne', () => {
-    it('should call service.findOne with companyId and id', async () => {
+    it('should call service.findOne with id', async () => {
       const project = { id: 1, name: 'Project 1', companyId: 1, company: { id: 1 } };
 
       mockProjectsService.findOne.mockResolvedValue(project);
 
-      const result = await controller.findOne(1, 1);
+      const result = await controller.findOne(1);
 
-      expect(service.findOne).toHaveBeenCalledWith(1, 1);
+      expect(service.findOne).toHaveBeenCalledWith(1);
       expect(result).toEqual(project);
     });
   });
 
   describe('update', () => {
-    it('should call service.update with companyId, id and dto', async () => {
-      const dto = { name: 'Updated Project' };
-      const project = { id: 1, ...dto, companyId: 1, company: { id: 1 } };
+    it('should call service.update with id and dto', async () => {
+      const dto = { name: 'Updated Project', companyId: 1 };
+      const project = { id: 1, ...dto, company: { id: 1 } };
 
       mockProjectsService.update.mockResolvedValue(project);
 
-      const result = await controller.update(1, 1, dto);
+      const result = await controller.update(1, dto);
 
-      expect(service.update).toHaveBeenCalledWith(1, 1, dto);
+      expect(service.update).toHaveBeenCalledWith(1, dto);
       expect(result).toEqual(project);
     });
   });
 
   describe('remove', () => {
-    it('should call service.remove with companyId and id', async () => {
+    it('should call service.remove with id', async () => {
       mockProjectsService.remove.mockResolvedValue(undefined);
 
-      await controller.remove(1, 1);
+      await controller.remove(1);
 
-      expect(service.remove).toHaveBeenCalledWith(1, 1);
+      expect(service.remove).toHaveBeenCalledWith(1);
     });
   });
 });

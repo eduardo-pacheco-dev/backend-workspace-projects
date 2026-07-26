@@ -14,45 +14,39 @@ export class ProjectsService {
     private readonly companiesRepository: Repository<Company>,
   ) {}
 
-  async create(companyId: number, dto: CreateProjectDto): Promise<Project> {
-    const company = await this.companiesRepository.findOneBy({ id: companyId });
+  async create(dto: CreateProjectDto): Promise<Project> {
+    const company = await this.companiesRepository.findOneBy({ id: dto.companyId });
     if (!company) {
-      throw new NotFoundException(`Company #${companyId} not found`);
+      throw new NotFoundException(`Company #${dto.companyId} not found`);
     }
 
-    const project = this.projectsRepository.create({
-      ...dto,
-      companyId,
-    });
+    const project = this.projectsRepository.create(dto);
     return this.projectsRepository.save(project);
   }
 
-  async findAll(companyId: number): Promise<Project[]> {
-    return this.projectsRepository.find({
-      where: { companyId },
-      relations: { company: true },
-    });
+  async findAll(): Promise<Project[]> {
+    return this.projectsRepository.find({ relations: { company: true } });
   }
 
-  async findOne(companyId: number, id: number): Promise<Project> {
+  async findOne(id: number): Promise<Project> {
     const project = await this.projectsRepository.findOne({
-      where: { id, companyId },
+      where: { id },
       relations: { company: true },
     });
     if (!project) {
-      throw new NotFoundException(`Project #${id} not found in company #${companyId}`);
+      throw new NotFoundException(`Project #${id} not found`);
     }
     return project;
   }
 
-  async update(companyId: number, id: number, dto: CreateProjectDto): Promise<Project> {
-    await this.findOne(companyId, id);
+  async update(id: number, dto: CreateProjectDto): Promise<Project> {
+    await this.findOne(id);
     await this.projectsRepository.update(id, dto);
-    return this.findOne(companyId, id);
+    return this.findOne(id);
   }
 
-  async remove(companyId: number, id: number): Promise<void> {
-    const project = await this.findOne(companyId, id);
+  async remove(id: number): Promise<void> {
+    const project = await this.findOne(id);
     await this.projectsRepository.remove(project);
   }
 }
