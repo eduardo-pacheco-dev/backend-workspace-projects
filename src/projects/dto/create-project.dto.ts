@@ -7,7 +7,7 @@ export class CreateProjectDto {
     example: 'Website Redesign',
   })
   @IsString()
-  name: string;
+  name!: string;
 
   @ApiPropertyOptional({
     description: 'Project description',
@@ -24,5 +24,5 @@ export class AddCompanyToProjectDto {
     example: 1,
   })
   @IsNumber()
-  companyId: number;
+  companyId!: number;
 }
