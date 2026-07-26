@@ -1,43 +1,27 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  ManyToMany,
-  JoinTable,
-} from 'typeorm';
-import { ApiProperty } from '@nestjs/swagger';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Company } from '../companies/company.entity';
 
 @Entity()
 export class Project {
-  @ApiProperty({
-    description: 'Unique identifier',
-    example: 1,
-  })
+  @ApiProperty({ description: 'Unique identifier', example: 1 })
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @ApiProperty({
-    description: 'Project name',
-    example: 'Website Redesign',
-  })
+  @ApiProperty({ description: 'Project name', example: 'Website Redesign' })
   @Column()
   name!: string;
 
-  @ApiProperty({
-    description: 'Project description',
-    example: 'Redesign the company website with modern UI/UX',
-    required: false,
-    nullable: true,
-  })
+  @ApiPropertyOptional({ description: 'Project description', example: 'Redesign the company website' })
   @Column({ nullable: true })
-  description!: string;
+  description?: string;
 
-  @ApiProperty({
-    description: 'Companies associated with this project',
-    type: () => [Company],
-  })
-  @ManyToMany(() => Company)
-  @JoinTable()
-  companies!: Company[];
+  @ApiProperty({ description: 'Company ID', example: 1 })
+  @Column()
+  companyId!: number;
+
+  @ApiProperty({ description: 'Company that owns this project', type: () => Company })
+  @ManyToOne(() => Company, (company) => company.projects)
+  @JoinColumn({ name: 'companyId' })
+  company!: Company;
 }

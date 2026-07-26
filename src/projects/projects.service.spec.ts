@@ -16,6 +16,7 @@ const createMockRepository = <T extends ObjectLiteral = any>(): MockRepository<T
   save: jest.fn(),
   update: jest.fn(),
   delete: jest.fn(),
+  remove: jest.fn(),
 });
 
 describe('ProjectsService', () => {
@@ -43,202 +44,106 @@ describe('ProjectsService', () => {
     companiesRepository = module.get(getRepositoryToken(Company));
   });
 
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
 
   describe('create', () => {
-    it('should create and return a project', async () => {
+    it('should create and return a project for a company', async () => {
+      const company = { id: 1, name: 'Acme Corp' };
       const dto = { name: 'Test Project', description: 'A test project' };
-      const project = { id: 1, ...dto, companies: [] };
+      const project = { id: 1, ...dto, companyId: 1, company };
 
+      companiesRepository.findOneBy!.mockResolvedValue(company);
       projectsRepository.create!.mockReturnValue(project);
       projectsRepository.save!.mockReturnValue(project);
 
-      const result = await service.create(dto);
+      const result = await service.create(1, dto);
 
-      expect(projectsRepository.create).toHaveBeenCalledWith(dto);
+      expect(companiesRepository.findOneBy).toHaveBeenCalledWith({ id: 1 });
+      expect(projectsRepository.create).toHaveBeenCalledWith({ ...dto, companyId: 1 });
       expect(projectsRepository.save).toHaveBeenCalledWith(project);
       expect(result).toEqual(project);
+    });
+
+    it('should throw NotFoundException when company is not found', async () => {
+      companiesRepository.findOneBy!.mockResolvedValue(undefined);
+
+      await expect(service.create(999, { name: 'Test' })).rejects.toThrow(NotFoundException);
     });
   });
 
   describe('findAll', () => {
-    it('should return all projects', async () => {
+    it('should return all projects for a company', async () => {
       const projects = [
-        { id: 1, name: 'Project 1', description: 'Desc 1', companies: [] },
-        { id: 2, name: 'Project 2', description: 'Desc 2', companies: [] },
+        { id: 1, name: 'Project 1', companyId: 1, company: { id: 1 } },
+        { id: 2, name: 'Project 2', companyId: 1, company: { id: 1 } },
       ];
 
-      projectsRepository.find!.mockReturnValue(projects);
+      projectsRepository.find!.mockResolvedValue(projects);
 
-      const result = await service.findAll();
+      const result = await service.findAll(1);
 
       expect(projectsRepository.find).toHaveBeenCalledWith({
-        relations: { companies: true },
+        where: { companyId: 1 },
+        relations: { company: true },
       });
       expect(result).toEqual(projects);
     });
   });
 
   describe('findOne', () => {
-    it('should return a project by id', async () => {
-      const project = {
-        id: 1,
-        name: 'Project 1',
-        description: 'Desc 1',
-        companies: [],
-      };
+    it('should return a project by id and companyId', async () => {
+      const project = { id: 1, name: 'Project 1', companyId: 1, company: { id: 1 } };
 
-      projectsRepository.findOne!.mockReturnValue(project);
+      projectsRepository.findOne!.mockResolvedValue(project);
 
-      const result = await service.findOne(1);
+      const result = await service.findOne(1, 1);
 
       expect(projectsRepository.findOne).toHaveBeenCalledWith({
-        where: { id: 1 },
-        relations: { companies: true },
+        where: { id: 1, companyId: 1 },
+        relations: { company: true },
       });
       expect(result).toEqual(project);
     });
 
     it('should throw NotFoundException when project is not found', async () => {
-      projectsRepository.findOne!.mockReturnValue(undefined);
+      projectsRepository.findOne!.mockResolvedValue(undefined);
 
-      await expect(service.findOne(999)).rejects.toThrow(NotFoundException);
+      await expect(service.findOne(1, 999)).rejects.toThrow(NotFoundException);
     });
   });
 
   describe('update', () => {
     it('should update and return the project', async () => {
       const dto = { name: 'Updated Project' };
-      const project = {
-        id: 1,
-        name: 'Updated Project',
-        description: 'Desc',
-        companies: [],
-      };
+      const project = { id: 1, name: 'Updated Project', companyId: 1, company: { id: 1 } };
 
-      projectsRepository.update!.mockReturnValue(undefined);
-      projectsRepository.findOne!.mockReturnValue(project);
+      projectsRepository.findOne!
+        .mockResolvedValueOnce(project)
+        .mockResolvedValueOnce(project);
+      projectsRepository.update!.mockResolvedValue(undefined);
 
-      const result = await service.update(1, dto);
+      const result = await service.update(1, 1, dto);
 
       expect(projectsRepository.update).toHaveBeenCalledWith(1, dto);
       expect(result).toEqual(project);
-    });
-
-    it('should throw NotFoundException when project is not found', async () => {
-      projectsRepository.update!.mockReturnValue(undefined);
-      projectsRepository.findOne!.mockReturnValue(undefined);
-
-      await expect(service.update(999, { name: 'Test' })).rejects.toThrow(
-        NotFoundException,
-      );
     });
   });
 
   describe('remove', () => {
     it('should delete the project', async () => {
-      projectsRepository.delete!.mockReturnValue(undefined);
+      const project = { id: 1, name: 'Project 1', companyId: 1 };
 
-      await service.remove(1);
+      projectsRepository.findOne!.mockResolvedValue(project);
 
-      expect(projectsRepository.delete).toHaveBeenCalledWith(1);
-    });
-  });
+      await service.remove(1, 1);
 
-  describe('addCompany', () => {
-    it('should add a company to the project', async () => {
-      const project = {
-        id: 1,
-        name: 'Project 1',
-        companies: [],
-      };
-      const company = { id: 1, name: 'Company 1' };
-
-      projectsRepository.findOne!.mockReturnValue(project);
-      companiesRepository.findOneBy!.mockReturnValue(company);
-      projectsRepository.save!.mockReturnValue({ ...project, companies: [company] });
-
-      const result = await service.addCompany(1, 1);
-
-      expect(companiesRepository.findOneBy).toHaveBeenCalledWith({ id: 1 });
-      expect(projectsRepository.save).toHaveBeenCalled();
-      expect(result.companies).toContainEqual(company);
-    });
-
-    it('should not duplicate company if already associated', async () => {
-      const company = { id: 1, name: 'Company 1' };
-      const project = {
-        id: 1,
-        name: 'Project 1',
-        companies: [company],
-      };
-
-      projectsRepository.findOne!.mockReturnValue(project);
-      companiesRepository.findOneBy!.mockReturnValue(company);
-      projectsRepository.save!.mockReturnValue(project);
-
-      await service.addCompany(1, 1);
-
-      expect(projectsRepository.save).not.toHaveBeenCalled();
-    });
-
-    it('should throw NotFoundException when company is not found', async () => {
-      const project = {
-        id: 1,
-        name: 'Project 1',
-        companies: [],
-      };
-
-      projectsRepository.findOne!.mockReturnValue(project);
-      companiesRepository.findOneBy!.mockReturnValue(undefined);
-
-      await expect(service.addCompany(1, 999)).rejects.toThrow(
-        NotFoundException,
-      );
-    });
-
-    it('should throw NotFoundException when project is not found', async () => {
-      projectsRepository.findOne!.mockReturnValue(undefined);
-
-      await expect(service.addCompany(999, 1)).rejects.toThrow(
-        NotFoundException,
-      );
-    });
-  });
-
-  describe('removeCompany', () => {
-    it('should remove a company from the project', async () => {
-      const company = { id: 1, name: 'Company 1' };
-      const project = {
-        id: 1,
-        name: 'Project 1',
-        companies: [company],
-      };
-      const updatedProject = {
-        id: 1,
-        name: 'Project 1',
-        companies: [],
-      };
-
-      projectsRepository.findOne!
-        .mockReturnValueOnce(project)
-        .mockReturnValueOnce(updatedProject);
-      projectsRepository.save!.mockReturnValue(updatedProject);
-
-      const result = await service.removeCompany(1, 1);
-
-      expect(projectsRepository.save).toHaveBeenCalled();
-      expect(result.companies).not.toContainEqual(company);
-    });
-
-    it('should throw NotFoundException when project is not found', async () => {
-      projectsRepository.findOne!.mockReturnValue(undefined);
-
-      await expect(service.removeCompany(999, 1)).rejects.toThrow(
-        NotFoundException,
-      );
+      expect(projectsRepository.remove).toHaveBeenCalledWith(project);
     });
   });
 });

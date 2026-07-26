@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Project } from '../projects/project.entity';
 
 export enum CompanySize {
   MEI = 'MEI',
@@ -51,4 +52,8 @@ export class Company {
   @ApiPropertyOptional({ description: 'Email address' })
   @Column({ nullable: true })
   email?: string;
+
+  @ApiPropertyOptional({ description: 'Projects associated with this company', type: () => [Project] })
+  @OneToMany(() => Project, (project) => project.company)
+  projects?: Project[];
 }
