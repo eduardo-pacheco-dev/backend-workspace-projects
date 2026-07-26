@@ -9,6 +9,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { User } from '../users/user.entity';
+import { EmailService } from '../email/email.service';
 import { RegisterDto } from './dto/register.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 
@@ -18,6 +19,7 @@ export class AuthService {
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
     private readonly jwtService: JwtService,
+    private readonly emailService: EmailService,
   ) {}
 
   async validateUser(email: string, password: string): Promise<any> {
@@ -108,8 +110,7 @@ export class AuthService {
       resetCodeExpires,
     });
 
-    // TODO: In production, send email here with the resetCode
-    console.log(`Password reset code for ${email}: ${resetCode}`);
+    await this.emailService.sendPasswordResetCode(email, resetCode);
 
     return { message: 'If the email exists, a verification code has been sent' };
   }
