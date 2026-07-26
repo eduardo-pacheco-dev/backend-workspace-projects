@@ -26,4 +26,10 @@ export class User {
   @ApiPropertyOptional({ description: 'Associated company ID' })
   @Column({ nullable: true })
   companyId?: number;
+
+  @Column({ nullable: true, select: false })
+  resetToken?: string;
+
+  @Column({ type: 'timestamp', nullable: true, select: false })
+  resetTokenExpires?: Date;
 }
