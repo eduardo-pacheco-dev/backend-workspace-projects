@@ -9,10 +9,11 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
   const config = new DocumentBuilder()
-    .setTitle('API')
-    .setDescription('API documentation')
+    .setTitle('Company Management API')
+    .setDescription('API for managing companies with CNPJ validation')
     .setVersion('1.0')
     .addBearerAuth()
+    .addTag('companies', 'Company management endpoints')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
