@@ -1,29 +1,54 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+
+export enum CompanySize {
+  MEI = 'MEI',
+  ME = 'ME',
+  EPP = 'EPP',
+  LLC = 'LLC',
+  CORPORATION = 'CORPORATION',
+  EIRELI = 'EIRELI',
+}
 
 @Entity()
 export class Company {
-  @ApiProperty()
+  @ApiProperty({ description: 'Unique identifier' })
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @ApiProperty()
+  @ApiProperty({ description: 'Company legal name' })
   @Column()
   name!: string;
 
-  @ApiProperty()
+  @ApiProperty({ description: 'Company CNPJ', example: '12.345.678/0001-95' })
   @Column({ unique: true })
   cnpj!: string;
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional({ description: 'Trade name' })
   @Column({ nullable: true })
-  address!: string;
+  tradeName?: string;
 
-  @ApiProperty({ required: false })
-  @Column({ nullable: true })
-  phone!: string;
+  @ApiPropertyOptional({ description: 'Opening date' })
+  @Column({ type: 'date', nullable: true })
+  openingDate?: Date;
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional({ description: 'Company size', enum: CompanySize })
+  @Column({ type: 'enum', enum: CompanySize, nullable: true })
+  companySize?: CompanySize;
+
+  @ApiPropertyOptional({ description: 'Registration status' })
   @Column({ nullable: true })
-  email!: string;
+  registrationStatus?: string;
+
+  @ApiPropertyOptional({ description: 'Full address' })
+  @Column({ nullable: true })
+  address?: string;
+
+  @ApiPropertyOptional({ description: 'Phone number' })
+  @Column({ nullable: true })
+  phone?: string;
+
+  @ApiPropertyOptional({ description: 'Email address' })
+  @Column({ nullable: true })
+  email?: string;
 }

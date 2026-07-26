@@ -1,22 +1,24 @@
 import { IsString, IsEmail, IsOptional, IsEnum, IsDateString } from 'class-validator';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsCnpj } from '../../common/validators/cnpj.constraint';
 import { CompanySize } from '../company.entity';
 
-export class CreateCompanyDto {
-  @ApiProperty({ description: 'Company legal name', example: 'Acme Technology LLC' })
+export class UpdateCompanyDto {
+  @ApiPropertyOptional({ description: 'Company legal name', example: 'Acme Technology LLC' })
+  @IsOptional()
   @IsString()
-  name!: string;
+  name?: string;
 
-  @ApiProperty({ description: 'Company CNPJ', example: '12.345.678/0001-95' })
+  @ApiPropertyOptional({ description: 'Company CNPJ', example: '12.345.678/0001-95' })
+  @IsOptional()
   @Transform(({ value }) =>
     typeof value === 'string'
       ? value.replace(/[^0-9A-Za-z]/g, '').toUpperCase()
       : value,
   )
   @IsCnpj({ message: 'Invalid CNPJ' })
-  cnpj!: string;
+  cnpj?: string;
 
   @ApiPropertyOptional({ description: 'Trade name', example: 'Acme Tech' })
   @IsOptional()

@@ -3,7 +3,7 @@ import { plainToInstance } from 'class-transformer';
 import { IsCnpj, CnpjConstraint } from './cnpj.constraint';
 
 class TestDto {
-  @IsCnpj({ message: 'CNPJ inválido' })
+  @IsCnpj({ message: 'Invalid CNPJ' })
   cnpj!: string;
 }
 
@@ -83,7 +83,7 @@ describe('CnpjConstraint', () => {
       const dto = plainToInstance(TestDto, { cnpj: '11111111111111' });
       const errors = await validate(dto);
       expect(errors.length).toBeGreaterThan(0);
-      expect(errors[0].constraints?.Cnpj).toBe('CNPJ inválido');
+      expect(errors[0].constraints?.Cnpj).toBe('Invalid CNPJ');
     });
 
     it('should fail for empty string', async () => {
