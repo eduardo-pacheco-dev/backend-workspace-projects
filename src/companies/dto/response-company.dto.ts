@@ -1,55 +1,51 @@
-import { IsString, IsEmail, IsOptional, IsEnum, IsDateString } from 'class-validator';
-import { Transform } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsCnpj } from '../../common/validators/cnpj.constraint';
 import { CompanySize } from '../company.entity';
 
-export class CreateCompanyDto {
+export class ResponseCompanyDto {
+  @ApiProperty({ description: 'Unique identifier' })
+  id!: number;
+
   @ApiProperty({ description: 'Company legal name' })
-  @IsString()
   name!: string;
 
   @ApiProperty({ description: 'Company CNPJ', example: '12.345.678/0001-95' })
-  @Transform(({ value }) =>
-    typeof value === 'string'
-      ? value.replace(/[^0-9A-Za-z]/g, '').toUpperCase()
-      : value,
-  )
-  @IsCnpj({ message: 'Invalid CNPJ' })
   cnpj!: string;
 
   @ApiPropertyOptional({ description: 'Trade name' })
-  @IsOptional()
-  @IsString()
   nomeFantasia?: string;
 
   @ApiPropertyOptional({ description: 'Opening date' })
-  @IsOptional()
-  @IsDateString()
-  dataAbertura?: string;
+  dataAbertura?: Date;
 
   @ApiPropertyOptional({ description: 'Company size', enum: CompanySize })
-  @IsOptional()
-  @IsEnum(CompanySize)
   porte?: CompanySize;
 
   @ApiPropertyOptional({ description: 'Registration status' })
-  @IsOptional()
-  @IsString()
   situacaoCadastral?: string;
 
   @ApiPropertyOptional({ description: 'Full address' })
-  @IsOptional()
-  @IsString()
   address?: string;
 
   @ApiPropertyOptional({ description: 'Phone number' })
-  @IsOptional()
-  @IsString()
   phone?: string;
 
   @ApiPropertyOptional({ description: 'Email address' })
-  @IsOptional()
-  @IsEmail()
   email?: string;
+}
+
+export class PaginatedCompaniesDto {
+  @ApiProperty({ description: 'List of companies', type: [ResponseCompanyDto] })
+  data!: ResponseCompanyDto[];
+
+  @ApiProperty({ description: 'Total number of companies' })
+  total!: number;
+
+  @ApiProperty({ description: 'Current page' })
+  page!: number;
+
+  @ApiProperty({ description: 'Items per page' })
+  limit!: number;
+
+  @ApiProperty({ description: 'Total number of pages' })
+  totalPages!: number;
 }
