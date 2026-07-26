@@ -6,6 +6,7 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -16,6 +17,8 @@ import {
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { Public } from './decorators/public.decorator';
 import { CurrentUser } from './decorators/current-user.decorator';
@@ -35,9 +38,10 @@ export class AuthController {
       type: 'object',
       properties: {
         id: { type: 'number', example: 1 },
-        name: { type: 'string', example: 'John Doe' },
+        firstName: { type: 'string', example: 'John' },
+        lastName: { type: 'string', example: 'Doe' },
         email: { type: 'string', example: 'john@example.com' },
-        companyId: { type: 'number', example: 1 },
+        emailConfirmed: { type: 'boolean', example: false },
       },
     },
   })
@@ -45,6 +49,24 @@ export class AuthController {
   @ApiResponse({ status: 400, description: 'Invalid data' })
   async register(@Body() dto: RegisterDto) {
     return this.authService.register(dto);
+  }
+
+  @Public()
+  @Get('confirm-email')
+  @ApiOperation({ summary: 'Confirm email address with token' })
+  @ApiResponse({
+    status: 200,
+    description: 'Email confirmed successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string', example: 'Email confirmed successfully' },
+      },
+    },
+  })
+  @ApiResponse({ status: 400, description: 'Invalid confirmation token' })
+  async confirmEmail(@Query('token') token: string) {
+    return this.authService.confirmEmail(token);
   }
 
   @Public()
@@ -63,7 +85,8 @@ export class AuthController {
           type: 'object',
           properties: {
             id: { type: 'number', example: 1 },
-            name: { type: 'string', example: 'John Doe' },
+            firstName: { type: 'string', example: 'John' },
+            lastName: { type: 'string', example: 'Doe' },
             email: { type: 'string', example: 'john@example.com' },
             companyId: { type: 'number', example: 1 },
           },
@@ -86,7 +109,8 @@ export class AuthController {
       type: 'object',
       properties: {
         id: { type: 'number', example: 1 },
-        name: { type: 'string', example: 'John Doe' },
+        firstName: { type: 'string', example: 'John' },
+        lastName: { type: 'string', example: 'Doe' },
         email: { type: 'string', example: 'john@example.com' },
         phone: { type: 'string', example: '+55 11 99999-1234' },
         companyId: { type: 'number', example: 1 },
@@ -96,5 +120,42 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async getProfile(@CurrentUser('id') userId: number) {
     return this.authService.getProfile(userId);
+  }
+
+  @Public()
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Request password reset code' })
+  @ApiResponse({
+    status: 200,
+    description: 'If the email exists, a verification code has been sent',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string', example: 'If the email exists, a verification code has been sent' },
+      },
+    },
+  })
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(dto.email);
+  }
+
+  @Public()
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Reset password with verification code' })
+  @ApiResponse({
+    status: 200,
+    description: 'Password has been reset successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string', example: 'Password has been reset successfully' },
+      },
+    },
+  })
+  @ApiResponse({ status: 400, description: 'Invalid or expired code' })
+  async resetPassword(@Body() dto: ResetPasswordDto) {
+    return this.authService.resetPassword(dto);
   }
 }

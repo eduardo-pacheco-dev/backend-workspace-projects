@@ -2,13 +2,17 @@ import {
   Injectable,
   UnauthorizedException,
   ConflictException,
+  BadRequestException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { randomBytes } from 'crypto';
 import * as bcrypt from 'bcrypt';
 import { User } from '../users/user.entity';
+import { EmailService } from '../email/email.service';
 import { RegisterDto } from './dto/register.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -16,6 +20,7 @@ export class AuthService {
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
     private readonly jwtService: JwtService,
+    private readonly emailService: EmailService,
   ) {}
 
   async validateUser(email: string, password: string): Promise<any> {
@@ -48,7 +53,8 @@ export class AuthService {
       access_token: this.jwtService.sign(payload),
       user: {
         id: user.id,
-        name: user.name,
+        firstName: user.firstName,
+        lastName: user.lastName,
         email: user.email,
         companyId: user.companyId,
       },
@@ -66,15 +72,45 @@ export class AuthService {
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(dto.password, salt);
+    const confirmationToken = randomBytes(32).toString('hex');
 
     const user = this.usersRepository.create({
-      ...dto,
+      firstName: dto.firstName,
+      lastName: dto.lastName,
+      email: dto.email,
       password: hashedPassword,
+      confirmationToken,
     });
 
     const savedUser = await this.usersRepository.save(user);
-    const { password: _, ...result } = savedUser;
+
+    await this.emailService.sendConfirmationEmail(
+      dto.email,
+      dto.firstName,
+      confirmationToken,
+    );
+
+    const { password: _, confirmationToken: __, ...result } = savedUser;
     return result;
+  }
+
+  async confirmEmail(token: string): Promise<{ message: string }> {
+    const user = await this.usersRepository
+      .createQueryBuilder('user')
+      .addSelect('user.confirmationToken')
+      .where('user.confirmationToken = :token', { token })
+      .getOne();
+
+    if (!user) {
+      throw new BadRequestException('Invalid confirmation token');
+    }
+
+    await this.usersRepository.update(user.id, {
+      emailConfirmed: true,
+      confirmationToken: undefined,
+    });
+
+    return { message: 'Email confirmed successfully' };
   }
 
   async getProfile(userId: number) {
@@ -87,5 +123,60 @@ export class AuthService {
     }
 
     return user;
+  }
+
+  async forgotPassword(email: string): Promise<{ message: string }> {
+    const user = await this.usersRepository.findOne({
+      where: { email },
+    });
+
+    if (!user) {
+      return { message: 'If the email exists, a verification code has been sent' };
+    }
+
+    const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const resetCodeExpires = new Date(Date.now() + 3600000); // 1 hour
+
+    await this.usersRepository.update(user.id, {
+      resetCode,
+      resetCodeExpires,
+    });
+
+    await this.emailService.sendPasswordResetCode(email, resetCode);
+
+    return { message: 'If the email exists, a verification code has been sent' };
+  }
+
+  async resetPassword(dto: ResetPasswordDto): Promise<{ message: string }> {
+    const user = await this.usersRepository
+      .createQueryBuilder('user')
+      .addSelect('user.resetCode')
+      .addSelect('user.resetCodeExpires')
+      .where('user.resetCode = :code', { code: dto.code })
+      .getOne();
+
+    if (!user) {
+      throw new BadRequestException('Invalid verification code');
+    }
+
+    if (user.resetCodeExpires && user.resetCodeExpires < new Date()) {
+      throw new BadRequestException('Verification code has expired');
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(dto.password, salt);
+
+    await this.usersRepository
+      .createQueryBuilder()
+      .update(User)
+      .set({
+        password: hashedPassword,
+        resetCode: undefined,
+        resetCodeExpires: undefined,
+      })
+      .where('id = :id', { id: user.id })
+      .execute();
+
+    return { message: 'Password has been reset successfully' };
   }
 }
