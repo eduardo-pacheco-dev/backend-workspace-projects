@@ -4,3 +4,4 @@ dist
 .agents
 .claude
 skills-lock.json
+logs

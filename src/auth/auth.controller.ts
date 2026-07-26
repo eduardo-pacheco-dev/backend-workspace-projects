@@ -6,6 +6,7 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -37,9 +38,10 @@ export class AuthController {
       type: 'object',
       properties: {
         id: { type: 'number', example: 1 },
-        name: { type: 'string', example: 'John Doe' },
+        firstName: { type: 'string', example: 'John' },
+        lastName: { type: 'string', example: 'Doe' },
         email: { type: 'string', example: 'john@example.com' },
-        companyId: { type: 'number', example: 1 },
+        emailConfirmed: { type: 'boolean', example: false },
       },
     },
   })
@@ -47,6 +49,24 @@ export class AuthController {
   @ApiResponse({ status: 400, description: 'Invalid data' })
   async register(@Body() dto: RegisterDto) {
     return this.authService.register(dto);
+  }
+
+  @Public()
+  @Get('confirm-email')
+  @ApiOperation({ summary: 'Confirm email address with token' })
+  @ApiResponse({
+    status: 200,
+    description: 'Email confirmed successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string', example: 'Email confirmed successfully' },
+      },
+    },
+  })
+  @ApiResponse({ status: 400, description: 'Invalid confirmation token' })
+  async confirmEmail(@Query('token') token: string) {
+    return this.authService.confirmEmail(token);
   }
 
   @Public()
@@ -65,7 +85,8 @@ export class AuthController {
           type: 'object',
           properties: {
             id: { type: 'number', example: 1 },
-            name: { type: 'string', example: 'John Doe' },
+            firstName: { type: 'string', example: 'John' },
+            lastName: { type: 'string', example: 'Doe' },
             email: { type: 'string', example: 'john@example.com' },
             companyId: { type: 'number', example: 1 },
           },
@@ -88,7 +109,8 @@ export class AuthController {
       type: 'object',
       properties: {
         id: { type: 'number', example: 1 },
-        name: { type: 'string', example: 'John Doe' },
+        firstName: { type: 'string', example: 'John' },
+        lastName: { type: 'string', example: 'Doe' },
         email: { type: 'string', example: 'john@example.com' },
         phone: { type: 'string', example: '+55 11 99999-1234' },
         companyId: { type: 'number', example: 1 },

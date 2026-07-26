@@ -7,6 +7,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { randomBytes } from 'crypto';
 import * as bcrypt from 'bcrypt';
 import { User } from '../users/user.entity';
 import { EmailService } from '../email/email.service';
@@ -52,7 +53,8 @@ export class AuthService {
       access_token: this.jwtService.sign(payload),
       user: {
         id: user.id,
-        name: user.name,
+        firstName: user.firstName,
+        lastName: user.lastName,
         email: user.email,
         companyId: user.companyId,
       },
@@ -70,15 +72,45 @@ export class AuthService {
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(dto.password, salt);
+    const confirmationToken = randomBytes(32).toString('hex');
 
     const user = this.usersRepository.create({
-      ...dto,
+      firstName: dto.firstName,
+      lastName: dto.lastName,
+      email: dto.email,
       password: hashedPassword,
+      confirmationToken,
     });
 
     const savedUser = await this.usersRepository.save(user);
-    const { password: _, ...result } = savedUser;
+
+    await this.emailService.sendConfirmationEmail(
+      dto.email,
+      dto.firstName,
+      confirmationToken,
+    );
+
+    const { password: _, confirmationToken: __, ...result } = savedUser;
     return result;
+  }
+
+  async confirmEmail(token: string): Promise<{ message: string }> {
+    const user = await this.usersRepository
+      .createQueryBuilder('user')
+      .addSelect('user.confirmationToken')
+      .where('user.confirmationToken = :token', { token })
+      .getOne();
+
+    if (!user) {
+      throw new BadRequestException('Invalid confirmation token');
+    }
+
+    await this.usersRepository.update(user.id, {
+      emailConfirmed: true,
+      confirmationToken: undefined,
+    });
+
+    return { message: 'Email confirmed successfully' };
   }
 
   async getProfile(userId: number) {

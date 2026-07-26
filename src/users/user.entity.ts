@@ -7,9 +7,13 @@ export class User {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @ApiProperty({ description: 'User full name' })
+  @ApiProperty({ description: 'User first name' })
   @Column()
-  name!: string;
+  firstName!: string;
+
+  @ApiProperty({ description: 'User last name' })
+  @Column()
+  lastName!: string;
 
   @ApiProperty({ description: 'User email address' })
   @Column({ unique: true })
@@ -18,6 +22,10 @@ export class User {
   @ApiProperty({ description: 'Hashed password' })
   @Column({ select: false })
   password!: string;
+
+  @ApiProperty({ description: 'Email confirmed' })
+  @Column({ default: false })
+  emailConfirmed!: boolean;
 
   @ApiPropertyOptional({ description: 'Phone number' })
   @Column({ nullable: true })
@@ -32,4 +40,7 @@ export class User {
 
   @Column({ type: 'timestamp', nullable: true, select: false })
   resetCodeExpires?: Date;
+
+  @Column({ nullable: true, select: false })
+  confirmationToken?: string;
 }
