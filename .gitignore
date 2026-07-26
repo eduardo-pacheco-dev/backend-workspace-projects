@@ -5,3 +5,4 @@ dist
 .claude
 skills-lock.json
 logs
+coverage
