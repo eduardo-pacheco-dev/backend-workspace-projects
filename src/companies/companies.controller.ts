@@ -53,20 +53,20 @@ export class CompaniesController {
   })
   @ApiQuery({ name: 'page', required: false, type: Number, description: 'Current page (default: 1)' })
   @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Items per page (default: 10)' })
-  @ApiQuery({ name: 'nome', required: false, type: String, description: 'Filter by name' })
+  @ApiQuery({ name: 'name', required: false, type: String, description: 'Filter by company name' })
   @ApiQuery({ name: 'cnpj', required: false, type: String, description: 'Filter by CNPJ' })
-  @ApiQuery({ name: 'situacaoCadastral', required: false, type: String, description: 'Filter by registration status' })
+  @ApiQuery({ name: 'registrationStatus', required: false, type: String, description: 'Filter by registration status' })
   async findAll(
     @Query('page') page?: number,
     @Query('limit') limit?: number,
-    @Query('nome') nome?: string,
+    @Query('name') name?: string,
     @Query('cnpj') cnpj?: string,
-    @Query('situacaoCadastral') situacaoCadastral?: string,
+    @Query('registrationStatus') registrationStatus?: string,
   ): Promise<PaginatedCompaniesDto> {
     return this.companiesService.findAll(
       page || 1,
       limit || 10,
-      { nome, cnpj, situacaoCadastral },
+      { name, cnpj, registrationStatus },
     );
   }
 

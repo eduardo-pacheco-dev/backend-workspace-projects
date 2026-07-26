@@ -5,23 +5,23 @@ export class ResponseCompanyDto {
   @ApiProperty({ description: 'Unique identifier', example: 1 })
   id!: number;
 
-  @ApiProperty({ description: 'Company legal name', example: 'Acme Technology Ltda' })
+  @ApiProperty({ description: 'Company legal name', example: 'Acme Technology LLC' })
   name!: string;
 
   @ApiProperty({ description: 'Company CNPJ', example: '12.345.678/0001-95' })
   cnpj!: string;
 
   @ApiPropertyOptional({ description: 'Trade name', example: 'Acme Tech' })
-  nomeFantasia?: string;
+  tradeName?: string;
 
   @ApiPropertyOptional({ description: 'Opening date', example: '2020-01-15' })
-  dataAbertura?: Date;
+  openingDate?: Date;
 
-  @ApiPropertyOptional({ description: 'Company size', enum: CompanySize, example: CompanySize.LTDA })
-  porte?: CompanySize;
+  @ApiPropertyOptional({ description: 'Company size', enum: CompanySize, example: CompanySize.LLC })
+  companySize?: CompanySize;
 
   @ApiPropertyOptional({ description: 'Registration status', example: 'Active' })
-  situacaoCadastral?: string;
+  registrationStatus?: string;
 
   @ApiPropertyOptional({ description: 'Full address', example: '123 Main Street, Suite 100, São Paulo, SP' })
   address?: string;

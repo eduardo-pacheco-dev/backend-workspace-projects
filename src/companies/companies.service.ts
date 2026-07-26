@@ -22,21 +22,21 @@ export class CompaniesService {
     page = 1,
     limit = 10,
     filters?: {
-      nome?: string;
+      name?: string;
       cnpj?: string;
-      situacaoCadastral?: string;
+      registrationStatus?: string;
     },
   ): Promise<{ data: Company[]; total: number; page: number; limit: number; totalPages: number }> {
     const where: any = {};
 
-    if (filters?.nome) {
-      where.name = Like(`%${filters.nome}%`);
+    if (filters?.name) {
+      where.name = Like(`%${filters.name}%`);
     }
     if (filters?.cnpj) {
       where.cnpj = Like(`%${filters.cnpj}%`);
     }
-    if (filters?.situacaoCadastral) {
-      where.situacaoCadastral = filters.situacaoCadastral;
+    if (filters?.registrationStatus) {
+      where.registrationStatus = filters.registrationStatus;
     }
 
     const [data, total] = await this.companiesRepository.findAndCount({

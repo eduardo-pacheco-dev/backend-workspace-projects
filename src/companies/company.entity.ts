@@ -5,8 +5,8 @@ export enum CompanySize {
   MEI = 'MEI',
   ME = 'ME',
   EPP = 'EPP',
-  LTDA = 'LTDA',
-  SA = 'SA',
+  LLC = 'LLC',
+  CORPORATION = 'CORPORATION',
   EIRELI = 'EIRELI',
 }
 
@@ -26,19 +26,19 @@ export class Company {
 
   @ApiPropertyOptional({ description: 'Trade name' })
   @Column({ nullable: true })
-  nomeFantasia?: string;
+  tradeName?: string;
 
   @ApiPropertyOptional({ description: 'Opening date' })
   @Column({ type: 'date', nullable: true })
-  dataAbertura?: Date;
+  openingDate?: Date;
 
   @ApiPropertyOptional({ description: 'Company size', enum: CompanySize })
   @Column({ type: 'enum', enum: CompanySize, nullable: true })
-  porte?: CompanySize;
+  companySize?: CompanySize;
 
   @ApiPropertyOptional({ description: 'Registration status' })
   @Column({ nullable: true })
-  situacaoCadastral?: string;
+  registrationStatus?: string;
 
   @ApiPropertyOptional({ description: 'Full address' })
   @Column({ nullable: true })

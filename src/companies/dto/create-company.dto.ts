@@ -5,7 +5,7 @@ import { IsCnpj } from '../../common/validators/cnpj.constraint';
 import { CompanySize } from '../company.entity';
 
 export class CreateCompanyDto {
-  @ApiProperty({ description: 'Company legal name', example: 'Acme Technology Ltda' })
+  @ApiProperty({ description: 'Company legal name', example: 'Acme Technology LLC' })
   @IsString()
   name!: string;
 
@@ -21,22 +21,22 @@ export class CreateCompanyDto {
   @ApiPropertyOptional({ description: 'Trade name', example: 'Acme Tech' })
   @IsOptional()
   @IsString()
-  nomeFantasia?: string;
+  tradeName?: string;
 
   @ApiPropertyOptional({ description: 'Opening date', example: '2020-01-15' })
   @IsOptional()
   @IsDateString()
-  dataAbertura?: string;
+  openingDate?: string;
 
-  @ApiPropertyOptional({ description: 'Company size', enum: CompanySize, example: CompanySize.LTDA })
+  @ApiPropertyOptional({ description: 'Company size', enum: CompanySize, example: CompanySize.LLC })
   @IsOptional()
   @IsEnum(CompanySize)
-  porte?: CompanySize;
+  companySize?: CompanySize;
 
   @ApiPropertyOptional({ description: 'Registration status', example: 'Active' })
   @IsOptional()
   @IsString()
-  situacaoCadastral?: string;
+  registrationStatus?: string;
 
   @ApiPropertyOptional({ description: 'Full address', example: '123 Main Street, Suite 100, São Paulo, SP' })
   @IsOptional()
