@@ -15,14 +15,14 @@ export class Project {
     example: 1,
   })
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @ApiProperty({
     description: 'Project name',
     example: 'Website Redesign',
   })
   @Column()
-  name: string;
+  name!: string;
 
   @ApiProperty({
     description: 'Project description',
@@ -31,7 +31,7 @@ export class Project {
     nullable: true,
   })
   @Column({ nullable: true })
-  description: string;
+  description!: string;
 
   @ApiProperty({
     description: 'Companies associated with this project',
@@ -39,5 +39,5 @@ export class Project {
   })
   @ManyToMany(() => Company)
   @JoinTable()
-  companies: Company[];
+  companies!: Company[];
 }
